@@ -16,3 +16,4 @@ daipendency-extractor-rust = "0.3.1"
 
 [dev-dependencies]
 assertables = "9.5.0"
+tempfile = "3.15.0"
