@@ -1,11 +1,11 @@
 mod extractors;
 mod formatting;
 mod languages;
-use std::path::Path;
+mod library;
 
-use daipendency_extractor::get_parser;
-use extractors::get_extractor;
 use formatting::format_library_context;
+use library::extract_public_api;
+use std::path::Path;
 
 pub use languages::Language;
 
@@ -20,12 +20,6 @@ pub use languages::Language;
 ///
 /// Returns a Result containing the generated documentation as a string, or an error if something went wrong.
 pub fn generate_documentation(path: &Path, language: Language) -> anyhow::Result<String> {
-    let extractor = get_extractor(language);
-    let metadata = extractor.get_library_metadata(path)?;
-    let mut parser = get_parser(&extractor.get_parser_language())?;
-    let namespaces = extractor.extract_public_api(&metadata, &mut parser)?;
-
-    let documentation = format_library_context(&metadata, &namespaces, language);
-
-    Ok(documentation)
+    let library = extract_public_api(path, language)?;
+    Ok(format_library_context(&library, language))
 }

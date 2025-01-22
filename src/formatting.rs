@@ -1,13 +1,12 @@
 use crate::languages::Language;
-use daipendency_extractor::{LibraryMetadata, Namespace};
+use crate::library::Library;
+use daipendency_extractor::Namespace;
 
-pub fn format_library_context(
-    metadata: &LibraryMetadata,
-    namespaces: &[Namespace],
-    language: Language,
-) -> String {
-    let api_content =
-        format_namespaces_content(namespaces, &format!("{:?}", language).to_lowercase());
+pub fn format_library_context(library: &Library, language: Language) -> String {
+    let api_content = format_namespaces_content(
+        &library.namespaces,
+        &format!("{:?}", language).to_lowercase(),
+    );
 
     format!(
         r#"---
@@ -20,9 +19,10 @@ library_version: {version}
 # API
 
 {api_content}"#,
-        name = metadata.name,
-        version = metadata.version.as_deref().unwrap_or("null"),
-        documentation = metadata.documentation.trim()
+        name = library.name,
+        version = library.version.as_deref().unwrap_or("null"),
+        documentation = library.documentation.trim(),
+        api_content = api_content
     )
 }
 
@@ -62,19 +62,23 @@ fn format_namespace_content(namespace: &Namespace, language: &str) -> String {
 mod tests {
     use super::*;
     use assertables::assert_contains;
+    use daipendency_extractor::Symbol;
 
     const STUB_LIBRARY_NAME: &str = "test-lib";
     const STUB_LIBRARY_VERSION: &str = "1.0.0";
     const STUB_DOCUMENTATION: &str = "Test documentation";
     const STUB_LANGUAGE: Language = Language::Rust;
     const STUB_LANGUAGE_STR: &str = "rust";
+    const STUB_SOURCE_CODE: &str = "SOURCE_CODE";
+    const STUB_MULTI_LINE_SOURCE_CODE: &str = "MULTI_LINE\nSOURCE_CODE";
+    const STUB_DOC_COMMENT: &str = "This is a doc comment";
 
-    fn create_metadata() -> LibraryMetadata {
-        LibraryMetadata {
+    fn create_library(namespaces: Vec<Namespace>) -> Library {
+        Library {
             name: STUB_LIBRARY_NAME.to_string(),
             version: Some(STUB_LIBRARY_VERSION.to_string()),
             documentation: STUB_DOCUMENTATION.to_string(),
-            entry_point: std::path::PathBuf::from("src/lib.rs"),
+            namespaces,
         }
     }
 
@@ -93,9 +97,8 @@ mod tests {
 
         #[test]
         fn library_name() {
-            let metadata = create_metadata();
-
-            let documentation = format_library_context(&metadata, &[], STUB_LANGUAGE);
+            let library = create_library(vec![]);
+            let documentation = format_library_context(&library, STUB_LANGUAGE);
             let frontmatter_lines = get_frontmatter_lines(documentation).unwrap();
 
             assert_contains!(
@@ -106,9 +109,8 @@ mod tests {
 
         #[test]
         fn with_library_version() {
-            let metadata = create_metadata();
-
-            let documentation = format_library_context(&metadata, &[], STUB_LANGUAGE);
+            let library = create_library(vec![]);
+            let documentation = format_library_context(&library, STUB_LANGUAGE);
             let frontmatter_lines = get_frontmatter_lines(documentation).unwrap();
 
             assert_contains!(
@@ -119,10 +121,9 @@ mod tests {
 
         #[test]
         fn without_library_version() {
-            let mut metadata = create_metadata();
-            metadata.version = None;
-            let documentation = format_library_context(&metadata, &[], STUB_LANGUAGE);
-
+            let mut library = create_library(vec![]);
+            library.version = None;
+            let documentation = format_library_context(&library, STUB_LANGUAGE);
             let frontmatter_lines = get_frontmatter_lines(documentation).unwrap();
 
             assert_contains!(frontmatter_lines, &"library_version: null".to_string());
@@ -130,9 +131,8 @@ mod tests {
 
         #[test]
         fn library_documentation() {
-            let metadata = create_metadata();
-
-            let documentation = format_library_context(&metadata, &[], STUB_LANGUAGE);
+            let library = create_library(vec![]);
+            let documentation = format_library_context(&library, STUB_LANGUAGE);
 
             assert_contains!(
                 documentation,
@@ -142,13 +142,7 @@ mod tests {
     }
 
     mod api {
-        use daipendency_extractor::Symbol;
-
         use super::*;
-
-        const STUB_SOURCE_CODE: &str = "SOURCE_CODE";
-        const STUB_MULTI_LINE_SOURCE_CODE: &str = "MULTI_LINE\nSOURCE_CODE";
-        const STUB_DOC_COMMENT: &str = "This is a doc comment";
 
         fn create_namespace(
             name: &str,
@@ -179,18 +173,21 @@ mod tests {
 
         #[test]
         fn no_namespaces() {
-            let documentation = format_library_context(&create_metadata(), &[], STUB_LANGUAGE);
+            let library = create_library(vec![]);
+            let documentation = format_library_context(&library, STUB_LANGUAGE);
             assert_api_is_empty(&documentation);
         }
 
         #[test]
         fn single_namespace() {
-            let symbol = create_symbol("symbol", STUB_SOURCE_CODE);
-            let namespace = create_namespace("test", vec![symbol], None);
+            let namespace = create_namespace(
+                "test",
+                vec![create_symbol("symbol", STUB_SOURCE_CODE)],
+                None,
+            );
             let namespace_name = namespace.name.clone();
-
-            let documentation =
-                format_library_context(&create_metadata(), &[namespace], STUB_LANGUAGE);
+            let library = create_library(vec![namespace]);
+            let documentation = format_library_context(&library, STUB_LANGUAGE);
 
             assert_contains!(
                 documentation,
@@ -213,20 +210,18 @@ mod tests {
                 vec![create_symbol("symbol2", STUB_SOURCE_CODE)],
                 None,
             );
-
-            let documentation = format_library_context(
-                &create_metadata(),
-                &[namespace1, namespace2],
-                STUB_LANGUAGE,
-            );
+            let namespace1_name = namespace1.name.clone();
+            let namespace2_name = namespace2.name.clone();
+            let library = create_library(vec![namespace1, namespace2]);
+            let documentation = format_library_context(&library, STUB_LANGUAGE);
 
             assert_contains!(
                 documentation,
-                &format!("## test1\n\n```{}\n", STUB_LANGUAGE_STR)
+                &format!("## {}\n\n```{}\n", namespace1_name, STUB_LANGUAGE_STR)
             );
             assert_contains!(
                 documentation,
-                &format!("## test2\n\n```{}\n", STUB_LANGUAGE_STR)
+                &format!("## {}\n\n```{}\n", namespace2_name, STUB_LANGUAGE_STR)
             );
         }
 
@@ -236,8 +231,8 @@ mod tests {
             #[test]
             fn namespace_without_symbols() {
                 let namespace = create_namespace("test", vec![], None);
-                let documentation =
-                    format_library_context(&create_metadata(), &[namespace], STUB_LANGUAGE);
+                let library = create_library(vec![namespace]);
+                let documentation = format_library_context(&library, STUB_LANGUAGE);
                 assert_api_is_empty(&documentation);
             }
 
@@ -248,9 +243,9 @@ mod tests {
                     vec![create_symbol("symbol", STUB_SOURCE_CODE)],
                     None,
                 );
+                let library = create_library(vec![namespace]);
+                let documentation = format_library_context(&library, STUB_LANGUAGE);
 
-                let documentation =
-                    format_library_context(&create_metadata(), &[namespace], STUB_LANGUAGE);
                 assert_contains!(documentation, &format!("```{}\n", STUB_LANGUAGE_STR));
                 assert_contains!(documentation, STUB_SOURCE_CODE);
                 assert_contains!(documentation, "\n```");
@@ -266,9 +261,8 @@ mod tests {
                     ],
                     None,
                 );
-
-                let documentation =
-                    format_library_context(&create_metadata(), &[namespace], STUB_LANGUAGE);
+                let library = create_library(vec![namespace]);
+                let documentation = format_library_context(&library, STUB_LANGUAGE);
 
                 assert_contains!(documentation, &format!("```{}\n", STUB_LANGUAGE_STR));
                 assert_contains!(documentation, "FIRST\n\nSECOND\n");
@@ -282,9 +276,8 @@ mod tests {
                     vec![create_symbol("symbol", STUB_SOURCE_CODE)],
                     None,
                 );
-
-                let documentation =
-                    format_library_context(&create_metadata(), &[namespace], STUB_LANGUAGE);
+                let library = create_library(vec![namespace]);
+                let documentation = format_library_context(&library, STUB_LANGUAGE);
 
                 assert_contains!(documentation, &format!("```{}\n", STUB_LANGUAGE_STR));
                 assert_contains!(documentation, STUB_SOURCE_CODE);
@@ -298,9 +291,8 @@ mod tests {
                     vec![create_symbol("symbol", STUB_MULTI_LINE_SOURCE_CODE)],
                     None,
                 );
-
-                let documentation =
-                    format_library_context(&create_metadata(), &[namespace], STUB_LANGUAGE);
+                let library = create_library(vec![namespace]);
+                let documentation = format_library_context(&library, STUB_LANGUAGE);
 
                 assert_contains!(documentation, &format!("```{}\n", STUB_LANGUAGE_STR));
                 assert_contains!(documentation, STUB_MULTI_LINE_SOURCE_CODE);
@@ -314,9 +306,8 @@ mod tests {
                     vec![create_symbol("symbol", STUB_SOURCE_CODE)],
                     None,
                 );
-
-                let documentation =
-                    format_library_context(&create_metadata(), &[namespace], STUB_LANGUAGE);
+                let library = create_library(vec![namespace]);
+                let documentation = format_library_context(&library, STUB_LANGUAGE);
 
                 assert_contains!(
                     documentation,
@@ -331,9 +322,8 @@ mod tests {
                     vec![create_symbol("symbol", STUB_SOURCE_CODE)],
                     Some(STUB_DOC_COMMENT),
                 );
-
-                let documentation =
-                    format_library_context(&create_metadata(), &[namespace], STUB_LANGUAGE);
+                let library = create_library(vec![namespace]);
+                let documentation = format_library_context(&library, STUB_LANGUAGE);
 
                 assert_contains!(
                     documentation,
