@@ -20,7 +20,7 @@ fn main() {
     };
     let path = PathBuf::from(&args[2]);
 
-    match generate_documentation(language, &path) {
+    match generate_documentation(&path, language) {
         Ok(output) => println!("{}", output),
         Err(error) => {
             eprintln!("Failed to generate documentation: {}", error);

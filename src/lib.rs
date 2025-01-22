@@ -13,13 +13,13 @@ pub use languages::Language;
 ///
 /// # Arguments
 ///
-/// * `language` - The programming language of the library
 /// * `path` - Path to the library's root directory
+/// * `language` - The programming language of the library
 ///
 /// # Returns
 ///
 /// Returns a Result containing the generated documentation as a string, or an error if something went wrong.
-pub fn generate_documentation(language: Language, path: &Path) -> anyhow::Result<String> {
+pub fn generate_documentation(path: &Path, language: Language) -> anyhow::Result<String> {
     let extractor = get_extractor(language);
     let metadata = extractor.get_library_metadata(path)?;
     let mut parser = get_parser(&extractor.get_parser_language())?;

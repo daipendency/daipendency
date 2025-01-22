@@ -28,7 +28,7 @@ use daipendency::{generate_documentation, Language};
 use std::path::Path;
 
 let path = Path::new("/path/to/crate");
-match generate_documentation(Language::Rust, path) {
+match generate_documentation(path, Language::Rust) {
     Ok(output) => println!("{}", output),
     Err(e) => eprintln!("Error: {}", e),
 }
