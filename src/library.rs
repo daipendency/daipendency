@@ -8,6 +8,7 @@ pub struct Library {
     pub version: Option<String>,
     pub documentation: String,
     pub namespaces: Vec<Namespace>,
+    pub language: Language,
 }
 
 pub fn extract_public_api(path: &Path, language: Language) -> anyhow::Result<Library> {
@@ -21,5 +22,6 @@ pub fn extract_public_api(path: &Path, language: Language) -> anyhow::Result<Lib
         version: metadata.version,
         documentation: metadata.documentation,
         namespaces,
+        language,
     })
 }
