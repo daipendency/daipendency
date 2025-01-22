@@ -1,13 +1,15 @@
-use daipendency_extractor::{LaibraryError, Namespace, PackageMetadata};
+use crate::languages::Language;
+use daipendency_extractor::{LibraryMetadata, Namespace};
 
 pub fn format_library_context(
-    metadata: &PackageMetadata,
+    metadata: &LibraryMetadata,
     namespaces: &[Namespace],
-    language: &str,
-) -> Result<String, LaibraryError> {
-    let api_content = format_namespaces_content(namespaces, language);
+    language: Language,
+) -> String {
+    let api_content =
+        format_namespaces_content(namespaces, &format!("{:?}", language).to_lowercase());
 
-    Ok(format!(
+    format!(
         r#"---
 library_name: {name}
 library_version: {version}
@@ -21,7 +23,7 @@ library_version: {version}
         name = metadata.name,
         version = metadata.version.as_deref().unwrap_or("null"),
         documentation = metadata.documentation.trim()
-    ))
+    )
 }
 
 fn format_namespaces_content(namespaces: &[Namespace], language: &str) -> String {
@@ -64,10 +66,11 @@ mod tests {
     const STUB_LIBRARY_NAME: &str = "test-lib";
     const STUB_LIBRARY_VERSION: &str = "1.0.0";
     const STUB_DOCUMENTATION: &str = "Test documentation";
-    const STUB_LANGUAGE: &str = "rust";
+    const STUB_LANGUAGE: Language = Language::Rust;
+    const STUB_LANGUAGE_STR: &str = "rust";
 
-    fn create_metadata() -> PackageMetadata {
-        PackageMetadata {
+    fn create_metadata() -> LibraryMetadata {
+        LibraryMetadata {
             name: STUB_LIBRARY_NAME.to_string(),
             version: Some(STUB_LIBRARY_VERSION.to_string()),
             documentation: STUB_DOCUMENTATION.to_string(),
@@ -92,7 +95,7 @@ mod tests {
         fn library_name() {
             let metadata = create_metadata();
 
-            let documentation = format_library_context(&metadata, &[], STUB_LANGUAGE).unwrap();
+            let documentation = format_library_context(&metadata, &[], STUB_LANGUAGE);
             let frontmatter_lines = get_frontmatter_lines(documentation).unwrap();
 
             assert_contains!(
@@ -105,7 +108,7 @@ mod tests {
         fn with_library_version() {
             let metadata = create_metadata();
 
-            let documentation = format_library_context(&metadata, &[], STUB_LANGUAGE).unwrap();
+            let documentation = format_library_context(&metadata, &[], STUB_LANGUAGE);
             let frontmatter_lines = get_frontmatter_lines(documentation).unwrap();
 
             assert_contains!(
@@ -118,7 +121,7 @@ mod tests {
         fn without_library_version() {
             let mut metadata = create_metadata();
             metadata.version = None;
-            let documentation = format_library_context(&metadata, &[], STUB_LANGUAGE).unwrap();
+            let documentation = format_library_context(&metadata, &[], STUB_LANGUAGE);
 
             let frontmatter_lines = get_frontmatter_lines(documentation).unwrap();
 
@@ -129,7 +132,7 @@ mod tests {
         fn library_documentation() {
             let metadata = create_metadata();
 
-            let documentation = format_library_context(&metadata, &[], STUB_LANGUAGE).unwrap();
+            let documentation = format_library_context(&metadata, &[], STUB_LANGUAGE);
 
             assert_contains!(
                 documentation,
@@ -176,8 +179,7 @@ mod tests {
 
         #[test]
         fn no_namespaces() {
-            let documentation =
-                format_library_context(&create_metadata(), &[], STUB_LANGUAGE).unwrap();
+            let documentation = format_library_context(&create_metadata(), &[], STUB_LANGUAGE);
             assert_api_is_empty(&documentation);
         }
 
@@ -188,13 +190,13 @@ mod tests {
             let namespace_name = namespace.name.clone();
 
             let documentation =
-                format_library_context(&create_metadata(), &[namespace], STUB_LANGUAGE).unwrap();
+                format_library_context(&create_metadata(), &[namespace], STUB_LANGUAGE);
 
             assert_contains!(
                 documentation,
                 &format!(
                     "## {}\n\n```{}\n{}\n```",
-                    namespace_name, STUB_LANGUAGE, STUB_SOURCE_CODE
+                    namespace_name, STUB_LANGUAGE_STR, STUB_SOURCE_CODE
                 )
             );
         }
@@ -216,16 +218,15 @@ mod tests {
                 &create_metadata(),
                 &[namespace1, namespace2],
                 STUB_LANGUAGE,
-            )
-            .unwrap();
+            );
 
             assert_contains!(
                 documentation,
-                &format!("## test1\n\n```{}\n", STUB_LANGUAGE)
+                &format!("## test1\n\n```{}\n", STUB_LANGUAGE_STR)
             );
             assert_contains!(
                 documentation,
-                &format!("## test2\n\n```{}\n", STUB_LANGUAGE)
+                &format!("## test2\n\n```{}\n", STUB_LANGUAGE_STR)
             );
         }
 
@@ -236,8 +237,7 @@ mod tests {
             fn namespace_without_symbols() {
                 let namespace = create_namespace("test", vec![], None);
                 let documentation =
-                    format_library_context(&create_metadata(), &[namespace], STUB_LANGUAGE)
-                        .unwrap();
+                    format_library_context(&create_metadata(), &[namespace], STUB_LANGUAGE);
                 assert_api_is_empty(&documentation);
             }
 
@@ -250,10 +250,8 @@ mod tests {
                 );
 
                 let documentation =
-                    format_library_context(&create_metadata(), &[namespace], STUB_LANGUAGE)
-                        .unwrap();
-
-                assert_contains!(documentation, &format!("```{}\n", STUB_LANGUAGE));
+                    format_library_context(&create_metadata(), &[namespace], STUB_LANGUAGE);
+                assert_contains!(documentation, &format!("```{}\n", STUB_LANGUAGE_STR));
                 assert_contains!(documentation, STUB_SOURCE_CODE);
                 assert_contains!(documentation, "\n```");
             }
@@ -270,10 +268,9 @@ mod tests {
                 );
 
                 let documentation =
-                    format_library_context(&create_metadata(), &[namespace], STUB_LANGUAGE)
-                        .unwrap();
+                    format_library_context(&create_metadata(), &[namespace], STUB_LANGUAGE);
 
-                assert_contains!(documentation, &format!("```{}\n", STUB_LANGUAGE));
+                assert_contains!(documentation, &format!("```{}\n", STUB_LANGUAGE_STR));
                 assert_contains!(documentation, "FIRST\n\nSECOND\n");
                 assert_contains!(documentation, "```\n");
             }
@@ -287,10 +284,9 @@ mod tests {
                 );
 
                 let documentation =
-                    format_library_context(&create_metadata(), &[namespace], STUB_LANGUAGE)
-                        .unwrap();
+                    format_library_context(&create_metadata(), &[namespace], STUB_LANGUAGE);
 
-                assert_contains!(documentation, &format!("```{}\n", STUB_LANGUAGE));
+                assert_contains!(documentation, &format!("```{}\n", STUB_LANGUAGE_STR));
                 assert_contains!(documentation, STUB_SOURCE_CODE);
                 assert_contains!(documentation, "\n```");
             }
@@ -304,10 +300,9 @@ mod tests {
                 );
 
                 let documentation =
-                    format_library_context(&create_metadata(), &[namespace], STUB_LANGUAGE)
-                        .unwrap();
+                    format_library_context(&create_metadata(), &[namespace], STUB_LANGUAGE);
 
-                assert_contains!(documentation, &format!("```{}\n", STUB_LANGUAGE));
+                assert_contains!(documentation, &format!("```{}\n", STUB_LANGUAGE_STR));
                 assert_contains!(documentation, STUB_MULTI_LINE_SOURCE_CODE);
                 assert_contains!(documentation, "\n```");
             }
@@ -321,12 +316,11 @@ mod tests {
                 );
 
                 let documentation =
-                    format_library_context(&create_metadata(), &[namespace], STUB_LANGUAGE)
-                        .unwrap();
+                    format_library_context(&create_metadata(), &[namespace], STUB_LANGUAGE);
 
                 assert_contains!(
                     documentation,
-                    &format!("```{}\n{}\n```", STUB_LANGUAGE, STUB_SOURCE_CODE)
+                    &format!("```{}\n{}\n```", STUB_LANGUAGE_STR, STUB_SOURCE_CODE)
                 );
             }
 
@@ -339,14 +333,13 @@ mod tests {
                 );
 
                 let documentation =
-                    format_library_context(&create_metadata(), &[namespace], STUB_LANGUAGE)
-                        .unwrap();
+                    format_library_context(&create_metadata(), &[namespace], STUB_LANGUAGE);
 
                 assert_contains!(
                     documentation,
                     &format!(
                         "```{}\n{}\n{}\n```",
-                        STUB_LANGUAGE, STUB_DOC_COMMENT, STUB_SOURCE_CODE
+                        STUB_LANGUAGE_STR, STUB_DOC_COMMENT, STUB_SOURCE_CODE
                     )
                 );
             }

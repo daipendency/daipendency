@@ -24,11 +24,11 @@ daipendency rust /path/to/library
 ## Library Usage
 
 ```rust
-use daipendency::generate_documentation;
+use daipendency::{generate_documentation, Language};
 use std::path::Path;
 
 let path = Path::new("/path/to/crate");
-match generate_documentation("rust", &path) {
+match generate_documentation(Language::Rust, path) {
     Ok(output) => println!("{}", output),
     Err(e) => eprintln!("Error: {}", e),
 }

@@ -12,6 +12,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "anyhow"
+version = "1.0.95"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "34ac096ce696dc2fcabef30516bb13c0a68a11d30131d3df6f04711467681b04"
+
+[[package]]
 name = "assertables"
 version = "9.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -28,8 +34,9 @@ dependencies = [
 
 [[package]]
 name = "daipendency"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
+ "anyhow",
  "assertables",
  "daipendency-extractor",
  "daipendency-extractor-rust",
@@ -37,20 +44,21 @@ dependencies = [
 
 [[package]]
 name = "daipendency-extractor"
-version = "1.0.1"
+version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bafbd1e2737e9550b88d0a7f8c63169b6e0467526eaf790cb189c644b99ae175"
+checksum = "468a7940c05a7fb678bb242c040fa44ec0a3a60cc6196f4c4998bc096900e1bd"
 dependencies = [
  "cc",
+ "thiserror",
  "tree-sitter",
  "walkdir",
 ]
 
 [[package]]
 name = "daipendency-extractor-rust"
-version = "0.1.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8dcb70ecf651be74db712e82c4fae34a63216146e05d73233619aaca5f6539d5"
+checksum = "540e4bdec8c4e04e58427f82ab2a9d39198727cdb1f02e91e31c1b42b1b4de3e"
 dependencies = [
  "cc",
  "daipendency-extractor",
@@ -195,6 +203,26 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
+]
+
+[[package]]
+name = "thiserror"
+version = "2.0.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d452f284b73e6d76dd36758a0c8684b1d5be31f92b89d07fd5822175732206fc"
+dependencies = [
+ "thiserror-impl",
+]
+
+[[package]]
+name = "thiserror-impl"
+version = "2.0.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "26afc1baea8a989337eeb52b6e72a039780ce45c3edfcc9c5b9d112feeb173c2"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]

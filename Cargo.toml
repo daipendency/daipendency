@@ -1,14 +1,18 @@
 [package]
 name = "daipendency"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2021"
 description = "Provides AI coding assistants with public API from dependencies"
+repository = "https://github.com/daipendency/daipendency"
+homepage = "https://github.com/daipendency/daipendency"
+documentation = "https://docs.rs/daipendency"
 license = "MIT"
 authors = ["Gus Narea"]
 
 [dependencies]
-daipendency-extractor = "1.0.1"
-daipendency-extractor-rust = "0.1.0"
+anyhow = "1.0.95"
+daipendency-extractor = "1.0.5"
+daipendency-extractor-rust = "0.3.0"
 
 [dev-dependencies]
 assertables = "9.5.0"
