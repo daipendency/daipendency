@@ -11,17 +11,19 @@ pub struct Library {
     pub language: Language,
 }
 
-pub fn extract_public_api(path: &Path, language: Language) -> anyhow::Result<Library> {
-    let extractor = get_extractor(language);
-    let metadata = extractor.get_library_metadata(path)?;
-    let mut parser = get_parser(&extractor.get_parser_language())?;
-    let namespaces = extractor.extract_public_api(&metadata, &mut parser)?;
+impl Library {
+    pub fn load(path: &Path, language: Language) -> anyhow::Result<Self> {
+        let extractor = get_extractor(language);
+        let metadata = extractor.get_library_metadata(path)?;
+        let mut parser = get_parser(&extractor.get_parser_language())?;
+        let namespaces = extractor.extract_public_api(&metadata, &mut parser)?;
 
-    Ok(Library {
-        name: metadata.name,
-        version: metadata.version,
-        documentation: metadata.documentation,
-        namespaces,
-        language,
-    })
+        Ok(Self {
+            name: metadata.name,
+            version: metadata.version,
+            documentation: metadata.documentation,
+            namespaces,
+            language,
+        })
+    }
 }
