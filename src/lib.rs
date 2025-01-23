@@ -20,6 +20,6 @@ pub use languages::Language;
 ///
 /// Returns a Result containing the generated documentation as a string, or an error if something went wrong.
 pub fn generate_documentation(path: &Path, language: Language) -> anyhow::Result<String> {
-    let library = Library::load(path, language)?;
+    let library = Library::load(path, Some(language))?;
     Ok(format_library_context(&library))
 }

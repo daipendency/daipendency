@@ -53,6 +53,7 @@ dependencies = [
  "daipendency-extractor",
  "daipendency-extractor-rust",
  "tempfile",
+ "thiserror",
 ]
 
 [[package]]

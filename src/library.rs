@@ -1,7 +1,9 @@
-use crate::extractors::get_extractor;
+use crate::extractors::{discover_extractor, get_extractor};
 use crate::languages::Language;
-use daipendency_extractor::{get_parser, Namespace};
+use daipendency_extractor::{get_parser, Extractor, Namespace};
 use std::path::Path;
+
+pub type BoxedExtractor = Box<dyn Extractor + Send + Sync>;
 
 pub struct Library {
     pub name: String,
@@ -12,9 +14,27 @@ pub struct Library {
 }
 
 impl Library {
-    pub fn load(path: &Path, language: Language) -> anyhow::Result<Self> {
-        let extractor = get_extractor(language);
-        let metadata = extractor.get_library_metadata(path)?;
+    /// Load a library from a `path`.
+    ///
+    /// Omitting the `language` argument will attempt to discover the language of the library by iterating over the supported languages, which can get very slow as we add more languages.
+    ///
+    /// # Returns
+    ///
+    /// Returns a Result containing the loaded library, or an error if something went wrong.
+    pub fn load(path: &Path, language: Option<Language>) -> anyhow::Result<Self> {
+        let (extractor, metadata, language) = if let Some(lang) = language {
+            let extractor = get_extractor(lang);
+            let metadata = extractor.get_library_metadata(path)?;
+            (extractor, metadata, lang)
+        } else {
+            let discovery = discover_extractor(path).map_err(|e| anyhow::anyhow!(e))?;
+            (
+                discovery.extractor,
+                discovery.library_metadata,
+                discovery.language,
+            )
+        };
+
         let mut parser = get_parser(&extractor.get_parser_language())?;
         let namespaces = extractor.extract_public_api(&metadata, &mut parser)?;
 
@@ -70,7 +90,7 @@ mod tests {
         fn name() {
             let library_path = create_temp_library(Some(STUB_VERSION.to_string()));
 
-            let library = Library::load(&library_path, Language::Rust).unwrap();
+            let library = Library::load(&library_path, Some(Language::Rust)).unwrap();
 
             assert_eq!(library.name, STUB_NAME);
         }
@@ -79,7 +99,7 @@ mod tests {
         fn version_present() {
             let library_path = create_temp_library(Some(STUB_VERSION.to_string()));
 
-            let library = Library::load(&library_path, Language::Rust).unwrap();
+            let library = Library::load(&library_path, Some(Language::Rust)).unwrap();
 
             assert_eq!(library.version, Some(STUB_VERSION.to_string()));
         }
@@ -88,7 +108,7 @@ mod tests {
         fn version_absent() {
             let library_path = create_temp_library(None);
 
-            let library = Library::load(&library_path, Language::Rust).unwrap();
+            let library = Library::load(&library_path, Some(Language::Rust)).unwrap();
 
             assert_eq!(library.version, None);
         }
@@ -97,7 +117,7 @@ mod tests {
         fn documentation() {
             let library_path = create_temp_library(Some(STUB_VERSION.to_string()));
 
-            let library = Library::load(&library_path, Language::Rust).unwrap();
+            let library = Library::load(&library_path, Some(Language::Rust)).unwrap();
 
             assert_eq!(library.documentation, STUB_DOCUMENTATION);
         }
@@ -106,7 +126,7 @@ mod tests {
         fn namespaces() {
             let library_path = create_temp_library(Some(STUB_VERSION.to_string()));
 
-            let library = Library::load(&library_path, Language::Rust).unwrap();
+            let library = Library::load(&library_path, Some(Language::Rust)).unwrap();
 
             assert_eq!(library.namespaces.len(), 1);
             let namespace = &library.namespaces[0];
@@ -116,12 +136,30 @@ mod tests {
         }
 
         #[test]
-        fn language() {
+        fn language_present() {
             let library_path = create_temp_library(Some(STUB_VERSION.to_string()));
 
-            let library = Library::load(&library_path, Language::Rust).unwrap();
+            let library = Library::load(&library_path, Some(Language::Rust)).unwrap();
 
             assert_eq!(library.language, Language::Rust);
+        }
+
+        #[test]
+        fn language_absent_but_discovered() {
+            let library_path = create_temp_library(Some(STUB_VERSION.to_string()));
+
+            let library = Library::load(&library_path, None).unwrap();
+
+            assert_eq!(library.language, Language::Rust);
+        }
+
+        #[test]
+        fn language_absent_and_not_discovered() {
+            let dir = TempDir::new().unwrap();
+
+            let result = Library::load(dir.path(), None);
+
+            assert!(result.is_err());
         }
     }
 }
