@@ -166,10 +166,8 @@ mod tests {
 
         fn assert_api_is_empty(documentation: &str) {
             let api_content = documentation.split("\n# API\n").nth(1).unwrap_or("").trim();
-            assert!(
-                api_content.is_empty(),
-                "Expected empty API content, got: {api_content}"
-            );
+
+            assert_eq!(api_content, "");
         }
 
         #[test]
