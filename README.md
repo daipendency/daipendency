@@ -15,24 +15,34 @@ This project was inspired by [Aider's _repository map_](https://aider.chat/docs/
 
 ## CLI Usage
 
-To extract the documentation from a library, pass the name of the language and the path to the library. For example:
+To extract the documentation from a library, pass the path to the library. For example:
 
 ```sh
-daipendency rust /path/to/library
+daipendency /path/to/library
+```
+
+Explicitly specifying the language is recommended, as it can be slow to auto-detect. For example:
+
+```sh
+daipendency --language=rust /path/to/library
 ```
 
 ## Library Usage
+
+To use Daipendency in your own Rust project, add it as a dependency and call the `generate_documentation` function. For example:
 
 ```rust
 use daipendency::{generate_documentation, Language};
 use std::path::Path;
 
 let path = Path::new("/path/to/crate");
-match generate_documentation(path, Language::Rust) {
+match generate_documentation(path, Some(Language::Rust)) {
     Ok(output) => println!("{}", output),
     Err(e) => eprintln!("Error: {}", e),
 }
 ```
+
+You can optionally set language to `None` to auto-detect the language, but this can get slow as we add more languages.
 
 ## Development
 
