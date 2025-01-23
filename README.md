@@ -33,3 +33,13 @@ match generate_documentation(path, Language::Rust) {
     Err(e) => eprintln!("Error: {}", e),
 }
 ```
+
+## Development
+
+### Adding Support for a New Language
+
+To add support for a new language, you need to:
+
+1. Implement the [`daipendency_extractor::Extractor` trait](https://docs.rs/daipendency-extractor/latest/daipendency_extractor/trait.Extractor.html) for the language. See [daipendency-extractor-rust](https://github.com/daipendency/daipendency-extractor-rust) for an example.
+2. Release your crate. Note that only MIT- or Apache-2.0-licensed crates are eligible for inclusion in Daipendency.
+3. Integrate your crate in `src/languages.rs`.

@@ -1,16 +1,16 @@
-use crate::languages::Language;
+use crate::languages::{Language, LanguageConfig};
 use daipendency_extractor::Extractor;
-use daipendency_extractor_rust::RustExtractor;
 
-pub fn get_extractor(language: Language) -> Box<dyn Extractor> {
-    match language {
-        Language::Rust => Box::new(RustExtractor::new()),
-    }
+pub fn get_extractor(language: Language) -> Box<dyn Extractor + Send + Sync> {
+    let config = LanguageConfig::get_from_language(language);
+
+    (config.extractor_initialiser)()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use daipendency_extractor_rust::RustExtractor;
 
     #[test]
     fn get_extractor_rust() {
