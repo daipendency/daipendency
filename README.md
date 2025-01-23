@@ -15,16 +15,18 @@ This project was inspired by [Aider's _repository map_](https://aider.chat/docs/
 
 ## CLI Usage
 
+### `daipendency extract`
+
 To extract the documentation from a library, pass the path to the library. For example:
 
 ```sh
-daipendency /path/to/library
+daipendency extract /path/to/library
 ```
 
 Explicitly specifying the language is recommended, as it can be slow to auto-detect. For example:
 
 ```sh
-daipendency --language=rust /path/to/library
+daipendency extract --language=rust /path/to/library
 ```
 
 ## Library Usage

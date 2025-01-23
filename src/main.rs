@@ -3,15 +3,14 @@ use daipendency::{generate_documentation, Language};
 use std::path::PathBuf;
 
 #[derive(Debug, Clone)]
-struct OptionSet {
-    path: PathBuf,
-    language: Option<Language>,
-}
-
-impl OptionSet {
-    fn new(path: PathBuf, language: Option<Language>) -> Self {
-        Self { path, language }
-    }
+enum Command {
+    /// Extract and document dependencies from a project
+    Extract {
+        /// Path to the project or file
+        path: PathBuf,
+        /// Programming language to use
+        language: Option<Language>,
+    },
 }
 
 fn make_path_arg() -> impl Parser<PathBuf> {
@@ -28,17 +27,31 @@ fn make_language_option() -> impl Parser<Option<Language>> {
         .optional()
 }
 
-fn make_option_set_parser() -> OptionParser<OptionSet> {
-    construct!(OptionSet::new(make_path_arg(), make_language_option()))
+fn extract() -> impl Parser<Command> {
+    let language = make_language_option();
+    let path = make_path_arg();
+
+    construct!(Command::Extract { language, path })
+}
+
+fn options() -> OptionParser<Command> {
+    let extract = extract()
         .to_options()
-        .descr("Generate documentation for dependencies")
+        .descr("Extract and document dependencies from a project")
+        .command("extract");
+
+    construct!([extract]).to_options()
 }
 
 fn main() -> Result<(), String> {
-    let options = make_option_set_parser().run();
-    let output = generate_documentation(options.path.as_path(), options.language)
-        .map_err(|e| e.to_string())?;
-    println!("{}", output);
+    let command = options().run();
+    match command {
+        Command::Extract { path, language } => {
+            let output =
+                generate_documentation(path.as_path(), language).map_err(|e| e.to_string())?;
+            println!("{}", output);
+        }
+    }
     Ok(())
 }
 
@@ -48,40 +61,46 @@ mod tests {
 
     #[test]
     fn test_parse_valid_path() {
-        let parser = make_option_set_parser();
+        let parser = options();
 
-        let result = parser.run_inner(&["/some/path"]);
+        let result = parser.run_inner(&["extract", "/some/path"]);
 
         assert!(result.is_ok());
-        let opts = result.unwrap();
-        assert_eq!(opts.path, PathBuf::from("/some/path"));
-        assert!(opts.language.is_none());
+        match result.unwrap() {
+            Command::Extract { path, language } => {
+                assert_eq!(path, PathBuf::from("/some/path"));
+                assert!(language.is_none());
+            }
+        }
     }
 
     #[test]
     fn test_parse_with_language() {
-        let parser = make_option_set_parser();
+        let parser = options();
 
-        let result = parser.run_inner(&["/some/path", "--language", "rust"]);
+        let result = parser.run_inner(&["extract", "/some/path", "--language", "rust"]);
 
         assert!(result.is_ok());
-        let opts = result.unwrap();
-        assert_eq!(opts.path, PathBuf::from("/some/path"));
-        assert_eq!(opts.language, Some(Language::Rust));
+        match result.unwrap() {
+            Command::Extract { path, language } => {
+                assert_eq!(path, PathBuf::from("/some/path"));
+                assert_eq!(language, Some(Language::Rust));
+            }
+        }
     }
 
     #[test]
     fn test_parse_with_invalid_language() {
-        let parser = make_option_set_parser();
+        let parser = options();
 
-        let result = parser.run_inner(&["/some/path", "--language", "invalid"]);
+        let result = parser.run_inner(&["extract", "/some/path", "--language", "invalid"]);
 
         assert!(result.is_err());
     }
 
     #[test]
     fn test_parse_with_no_args() {
-        let parser = make_option_set_parser();
+        let parser = options();
 
         let result = parser.run_inner(&[]);
 
@@ -90,9 +109,18 @@ mod tests {
 
     #[test]
     fn test_parse_with_multiple_paths() {
-        let parser = make_option_set_parser();
+        let parser = options();
 
-        let result = parser.run_inner(&["/some/path", "/another/path"]);
+        let result = parser.run_inner(&["extract", "/some/path", "/another/path"]);
+
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_parse_without_extract_command() {
+        let parser = options();
+
+        let result = parser.run_inner(&["/some/path"]);
 
         assert!(result.is_err());
     }
