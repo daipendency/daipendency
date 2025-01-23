@@ -11,6 +11,7 @@ authors = ["Gus Narea"]
 
 [dependencies]
 anyhow = "1.0.95"
+bpaf = "0.9.15"
 daipendency-extractor = "1.0.6"
 daipendency-extractor-rust = "0.3.1"
 thiserror = "2.0.11"
