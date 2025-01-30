@@ -1,20 +1,11 @@
-use super::Command;
+use super::{make_language_option, Command};
 use bpaf::{parsers::ParseCommand, *};
-use daipendency::Language;
 use std::path::PathBuf;
 
 fn make_path_arg() -> impl Parser<PathBuf> {
     positional("PATH")
         .help("Path to the project or file to generate documentation for")
         .map(|s: String| PathBuf::from(s))
-}
-
-fn make_language_option() -> impl Parser<Option<Language>> {
-    long("language")
-        .help("Programming language to use for documentation generation")
-        .argument("LANG")
-        .parse(|s: String| s.parse::<Language>())
-        .optional()
 }
 
 pub fn make_extract_subcommand() -> ParseCommand<Command> {
@@ -29,6 +20,8 @@ pub fn make_extract_subcommand() -> ParseCommand<Command> {
 
 #[cfg(test)]
 mod tests {
+    use daipendency::Language;
+
     use super::*;
 
     #[test]

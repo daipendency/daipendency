@@ -39,28 +39,37 @@ To extract the documentation from a library, pass the path to the library. For e
 daipendency extract /path/to/library
 ```
 
-Explicitly specifying the language is recommended, as it can be slow to auto-detect. For example:
-
-```sh
-daipendency extract --language=rust /path/to/library
-```
-
 ## Library Usage
 
-To use Daipendency in your own Rust project, add it as a dependency and call the `generate_documentation` function. For example:
+You can use the [`daipendency`](https://crates.io/crates/daipendency) crate in your own Rust project.
+
+Firstly, you need to load the library from which you want to extract the documentation using `Library::load_dependency` or `Library::load`. For example:
 
 ```rust
-use daipendency::{generate_documentation, Language};
+use daipendency::{Library, Language};
 use std::path::Path;
 
-let path = Path::new("/path/to/crate");
-match generate_documentation(path, Some(Language::Rust)) {
-    Ok(output) => println!("{}", output),
-    Err(e) => eprintln!("Error: {}", e),
-}
+let library = Library::load_dependency(
+    "thiserror",
+    Path::new("/path/to/crate"),
+    Some(Language::Rust),
+)?;
 ```
 
-You can optionally set language to `None` to auto-detect the language, but this can get slow as we add more languages.
+[`Library`](https://docs.rs/daipendency/latest/daipendency/struct.Library.html) instances contain all the [_symbols_](https://docs.rs/daipendency-extractor/latest/daipendency_extractor/struct.Symbol.html) (e.g. functions) in the library, grouped into [_namespaces_](https://docs.rs/daipendency-extractor/latest/daipendency_extractor/struct.Namespace.html) (e.g. Rust _modules_, Java _packages_).
+You can extract the namespaces and symbols in which you're interested and process them however you want,
+or you can use the `generate_markdown_documentation` function to generate a Markdown file as follows:
+
+```rust
+use daipendency::generate_markdown_documentation;
+
+let documentation = generate_markdown_documentation(&library);
+```
+
+## Automatic Language Detection
+
+Daipendency can automatically detect the language of a library if you don't specify it in the CLI with the `--language` option or in the `Library` function.
+However, you should try to specify the language explicitly, since auto-detection can get slow as we add more languages.
 
 ## Development
 

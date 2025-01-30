@@ -1,4 +1,4 @@
-use daipendency::{format_library_context, generate_documentation, get_dependency};
+use daipendency::{generate_markdown_documentation, Library};
 mod cli;
 use cli::{make_command_parser, Command};
 
@@ -6,16 +6,17 @@ fn main() -> Result<(), String> {
     let command = make_command_parser().run();
     match command {
         Command::Extract { path, language } => {
-            let output =
-                generate_documentation(path.as_path(), language).map_err(|e| e.to_string())?;
-            println!("{}", output);
+            let library = Library::load(path.as_path(), language).map_err(|e| e.to_string())?;
+            println!("{}", generate_markdown_documentation(&library));
         }
         Command::ExtractDep {
             dependency,
             dependant,
+            language,
         } => {
-            let dependency = get_dependency(&dependency, &dependant).map_err(|e| e.to_string())?;
-            println!("{}", format_library_context(&dependency));
+            let dependency = Library::load_dependency(&dependency, &dependant, language)
+                .map_err(|e| e.to_string())?;
+            println!("{}", generate_markdown_documentation(&dependency));
         }
     }
     Ok(())

@@ -1,7 +1,7 @@
 use crate::library::Library;
 use daipendency_extractor::Namespace;
 
-pub fn format_library_context(library: &Library) -> String {
+pub fn generate_markdown_documentation(library: &Library) -> String {
     let api_content = format_namespaces_content(
         &library.namespaces,
         &format!("{:?}", library.language).to_lowercase(),
@@ -99,7 +99,7 @@ mod tests {
         #[test]
         fn library_name() {
             let library = create_library(vec![]);
-            let documentation = format_library_context(&library);
+            let documentation = generate_markdown_documentation(&library);
             let frontmatter_lines = get_frontmatter_lines(documentation).unwrap();
 
             assert_contains!(
@@ -111,7 +111,7 @@ mod tests {
         #[test]
         fn with_library_version() {
             let library = create_library(vec![]);
-            let documentation = format_library_context(&library);
+            let documentation = generate_markdown_documentation(&library);
             let frontmatter_lines = get_frontmatter_lines(documentation).unwrap();
 
             assert_contains!(
@@ -124,7 +124,7 @@ mod tests {
         fn without_library_version() {
             let mut library = create_library(vec![]);
             library.version = None;
-            let documentation = format_library_context(&library);
+            let documentation = generate_markdown_documentation(&library);
             let frontmatter_lines = get_frontmatter_lines(documentation).unwrap();
 
             assert_contains!(frontmatter_lines, &"library_version: null".to_string());
@@ -133,7 +133,7 @@ mod tests {
         #[test]
         fn library_documentation() {
             let library = create_library(vec![]);
-            let documentation = format_library_context(&library);
+            let documentation = generate_markdown_documentation(&library);
 
             assert_contains!(
                 documentation,
@@ -173,7 +173,7 @@ mod tests {
         #[test]
         fn no_namespaces() {
             let library = create_library(vec![]);
-            let documentation = format_library_context(&library);
+            let documentation = generate_markdown_documentation(&library);
             assert_api_is_empty(&documentation);
         }
 
@@ -186,7 +186,7 @@ mod tests {
             );
             let namespace_name = namespace.name.clone();
             let library = create_library(vec![namespace]);
-            let documentation = format_library_context(&library);
+            let documentation = generate_markdown_documentation(&library);
 
             assert_contains!(
                 documentation,
@@ -212,7 +212,7 @@ mod tests {
             let namespace1_name = namespace1.name.clone();
             let namespace2_name = namespace2.name.clone();
             let library = create_library(vec![namespace1, namespace2]);
-            let documentation = format_library_context(&library);
+            let documentation = generate_markdown_documentation(&library);
 
             assert_contains!(
                 documentation,
@@ -231,7 +231,7 @@ mod tests {
             fn namespace_without_symbols() {
                 let namespace = create_namespace("test", vec![], None);
                 let library = create_library(vec![namespace]);
-                let documentation = format_library_context(&library);
+                let documentation = generate_markdown_documentation(&library);
                 assert_api_is_empty(&documentation);
             }
 
@@ -243,7 +243,7 @@ mod tests {
                     None,
                 );
                 let library = create_library(vec![namespace]);
-                let documentation = format_library_context(&library);
+                let documentation = generate_markdown_documentation(&library);
 
                 assert_contains!(documentation, &format!("```{}\n", STUB_LANGUAGE_STR));
                 assert_contains!(documentation, STUB_SOURCE_CODE);
@@ -261,7 +261,7 @@ mod tests {
                     None,
                 );
                 let library = create_library(vec![namespace]);
-                let documentation = format_library_context(&library);
+                let documentation = generate_markdown_documentation(&library);
 
                 assert_contains!(documentation, &format!("```{}\n", STUB_LANGUAGE_STR));
                 assert_contains!(documentation, "FIRST\n\nSECOND\n");
@@ -276,7 +276,7 @@ mod tests {
                     None,
                 );
                 let library = create_library(vec![namespace]);
-                let documentation = format_library_context(&library);
+                let documentation = generate_markdown_documentation(&library);
 
                 assert_contains!(documentation, &format!("```{}\n", STUB_LANGUAGE_STR));
                 assert_contains!(documentation, STUB_SOURCE_CODE);
@@ -291,7 +291,7 @@ mod tests {
                     None,
                 );
                 let library = create_library(vec![namespace]);
-                let documentation = format_library_context(&library);
+                let documentation = generate_markdown_documentation(&library);
 
                 assert_contains!(documentation, &format!("```{}\n", STUB_LANGUAGE_STR));
                 assert_contains!(documentation, STUB_MULTI_LINE_SOURCE_CODE);
@@ -306,7 +306,7 @@ mod tests {
                     None,
                 );
                 let library = create_library(vec![namespace]);
-                let documentation = format_library_context(&library);
+                let documentation = generate_markdown_documentation(&library);
 
                 assert_contains!(
                     documentation,
@@ -322,7 +322,7 @@ mod tests {
                     Some(STUB_DOC_COMMENT),
                 );
                 let library = create_library(vec![namespace]);
-                let documentation = format_library_context(&library);
+                let documentation = generate_markdown_documentation(&library);
 
                 assert_contains!(
                     documentation,

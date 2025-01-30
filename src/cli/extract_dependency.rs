@@ -1,4 +1,4 @@
-use super::Command;
+use super::{make_language_option, Command};
 use bpaf::{parsers::ParseCommand, *};
 use std::env::current_dir;
 use std::path::PathBuf;
@@ -10,10 +10,12 @@ pub fn make_extract_dep_subcommand() -> ParseCommand<Command> {
         .map(|s: String| PathBuf::from(s))
         .fallback(current_dir().unwrap());
     let dependency = positional("DEPENDENCY").help("Name of the dependency to extract");
+    let language = make_language_option();
 
     construct!(Command::ExtractDep {
         dependant,
-        dependency
+        dependency,
+        language,
     })
     .to_options()
     .descr("Extract a specific dependency")
@@ -37,6 +39,7 @@ mod tests {
             Command::ExtractDep {
                 dependency,
                 dependant,
+                language: None,
             } if dependency == "my-dep" && dependant == current_dir().unwrap()
         );
     }
@@ -52,6 +55,7 @@ mod tests {
             Command::ExtractDep {
                 dependency,
                 dependant,
+                language: None,
             } if dependency == "my-dep" && dependant == PathBuf::from("/some/path")
         );
     }

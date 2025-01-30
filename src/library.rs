@@ -51,6 +51,29 @@ impl Library {
             language,
         })
     }
+
+    /// Load a dependency of a crate.
+    ///
+    /// # Returns
+    ///
+    /// Returns a Result containing the loaded dependency, or an error if something went wrong.
+    pub fn load_dependency(
+        name: &str,
+        dependant_path: &Path,
+        language: Option<Language>,
+    ) -> anyhow::Result<Self> {
+        let (extractor, language) = if let Some(lang) = language {
+            let extractor = get_extractor(lang);
+            (extractor, lang)
+        } else {
+            let discovery = discover_extractor(dependant_path).map_err(|e| anyhow::anyhow!(e))?;
+            (discovery.extractor, discovery.language)
+        };
+        let dependency_path = extractor
+            .resolve_dependency_path(name, dependant_path)
+            .map_err(|e| anyhow::anyhow!(e))?;
+        Self::load(&dependency_path, Some(language))
+    }
 }
 
 #[cfg(test)]

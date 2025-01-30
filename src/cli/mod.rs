@@ -23,6 +23,8 @@ pub enum Command {
         dependency: String,
         /// Path to the dependant project
         dependant: PathBuf,
+        /// Programming language to use
+        language: Option<Language>,
     },
 }
 
@@ -35,6 +37,14 @@ pub fn make_command_parser() -> OptionParser<Command> {
         .to_options()
         .descr("A tool for extracting and documenting dependencies")
         .header("daipendency")
+}
+
+fn make_language_option() -> impl Parser<Option<Language>> {
+    long("language")
+        .help("Programming language to use for documentation generation")
+        .argument("LANG")
+        .parse(|s: String| s.parse::<Language>())
+        .optional()
 }
 
 #[cfg(test)]
@@ -66,7 +76,8 @@ mod tests {
             result.unwrap(),
             Command::ExtractDep {
                 dependency: _,
-                dependant: _
+                dependant: _,
+                language: None,
             }
         ));
     }
