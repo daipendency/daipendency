@@ -14,8 +14,8 @@ pub fn make_extract_dep_subcommand() -> ParseCommand<Command> {
 
     construct!(Command::ExtractDep {
         dependant,
-        dependency,
         language,
+        dependency,
     })
     .to_options()
     .descr("Extract a specific dependency")

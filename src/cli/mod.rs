@@ -19,12 +19,12 @@ pub enum Command {
     },
     /// Extract a specific dependency
     ExtractDep {
-        /// Name of the dependency to extract
-        dependency: String,
         /// Path to the dependant project
         dependant: PathBuf,
         /// Programming language to use
         language: Option<Language>,
+        /// Name of the dependency to extract
+        dependency: String,
     },
 }
 
