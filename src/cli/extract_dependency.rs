@@ -1,5 +1,6 @@
 use super::Command;
 use bpaf::{parsers::ParseCommand, *};
+use std::env::current_dir;
 use std::path::PathBuf;
 
 pub fn make_extract_dep_subcommand() -> ParseCommand<Command> {
@@ -7,7 +8,7 @@ pub fn make_extract_dep_subcommand() -> ParseCommand<Command> {
         .help("Path to the dependant project")
         .argument("PATH")
         .map(|s: String| PathBuf::from(s))
-        .fallback(std::env::current_dir().unwrap());
+        .fallback(current_dir().unwrap());
     let dependency = positional("DEPENDENCY").help("Name of the dependency to extract");
 
     construct!(Command::ExtractDep {
@@ -21,6 +22,8 @@ pub fn make_extract_dep_subcommand() -> ParseCommand<Command> {
 
 #[cfg(test)]
 mod tests {
+    use assertables::assert_matches;
+
     use super::*;
 
     #[test]
@@ -30,16 +33,12 @@ mod tests {
         let result = parser.run_inner(&["extract-dep", "my-dep"]);
 
         assert!(result.is_ok());
-        match result.unwrap() {
+        assert_matches!(result.unwrap(),
             Command::ExtractDep {
                 dependency,
                 dependant,
-            } => {
-                assert_eq!(dependency, "my-dep");
-                assert_eq!(dependant, PathBuf::from("."));
-            }
-            _ => panic!("Expected ExtractDep command"),
-        }
+            } if dependency == "my-dep" && dependant == current_dir().unwrap()
+        );
     }
 
     #[test]
@@ -49,16 +48,12 @@ mod tests {
         let result = parser.run_inner(&["extract-dep", "my-dep", "--dependant", "/some/path"]);
 
         assert!(result.is_ok());
-        match result.unwrap() {
+        assert_matches!(result.unwrap(),
             Command::ExtractDep {
                 dependency,
                 dependant,
-            } => {
-                assert_eq!(dependency, "my-dep");
-                assert_eq!(dependant, PathBuf::from("/some/path"));
-            }
-            _ => panic!("Expected ExtractDep command"),
-        }
+            } if dependency == "my-dep" && dependant == PathBuf::from("/some/path")
+        );
     }
 
     #[test]
