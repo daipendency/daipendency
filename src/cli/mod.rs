@@ -43,7 +43,6 @@ fn make_language_option() -> impl Parser<Option<Language>> {
     long("language")
         .help("Programming language to use for documentation generation")
         .argument("LANG")
-        .parse(|s: String| s.parse::<Language>())
         .optional()
 }
 

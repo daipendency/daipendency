@@ -3,9 +3,7 @@ use bpaf::{parsers::ParseCommand, *};
 use std::path::PathBuf;
 
 fn make_path_arg() -> impl Parser<PathBuf> {
-    positional("PATH")
-        .help("Path to the project or file to generate documentation for")
-        .map(|s: String| PathBuf::from(s))
+    positional("PATH").help("Path to the project or file to generate documentation for")
 }
 
 pub fn make_extract_subcommand() -> ParseCommand<Command> {
