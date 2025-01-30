@@ -1,6 +1,6 @@
 [package]
 name = "daipendency"
-version = "1.0.1"
+version = "1.1.0"
 edition = "2021"
 description = "Provides AI coding assistants with public API from dependencies"
 repository = "https://github.com/daipendency/daipendency"
@@ -12,8 +12,8 @@ authors = ["Gus Narea"]
 [dependencies]
 anyhow = "1.0.95"
 bpaf = "0.9.15"
-daipendency-extractor = "1.0.6"
-daipendency-extractor-rust = "0.3.1"
+daipendency-extractor = "1.0.8"
+daipendency-extractor-rust = "0.4.3"
 thiserror = "2.0.11"
 
 [dev-dependencies]

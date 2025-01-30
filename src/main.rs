@@ -1,4 +1,4 @@
-use daipendency::generate_documentation;
+use daipendency::{format_library_context, generate_documentation, get_dependency};
 mod cli;
 use cli::{make_command_parser, Command};
 
@@ -14,7 +14,8 @@ fn main() -> Result<(), String> {
             dependency,
             dependant,
         } => {
-            println!("hello {}, from {}", dependency, dependant.display());
+            let dependency = get_dependency(&dependency, &dependant).map_err(|e| e.to_string())?;
+            println!("{}", format_library_context(&dependency));
         }
     }
     Ok(())

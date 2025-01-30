@@ -124,9 +124,9 @@ version = "0.1.0"
             .unwrap();
 
             let result = discover_extractor(temp_dir.path());
-            let discovery = result.as_ref().unwrap();
 
             assert_ok!(&result);
+            let discovery = result.unwrap();
             assert_eq!(discovery.language, Language::Rust);
             assert_eq!(discovery.library_metadata.name, "test-package");
             assert_eq!(

@@ -36,7 +36,12 @@ impl Library {
         };
 
         let mut parser = get_parser(&extractor.get_parser_language())?;
-        let namespaces = extractor.extract_public_api(&metadata, &mut parser)?;
+        let namespaces = match extractor.extract_public_api(&metadata, &mut parser) {
+            Ok(namespaces) => namespaces,
+            Err(e) => {
+                return Err(anyhow::anyhow!("Failed to extract public API: {}", e));
+            }
+        };
 
         Ok(Self {
             name: metadata.name,

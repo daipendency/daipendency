@@ -7,7 +7,7 @@ pub fn make_extract_dep_subcommand() -> ParseCommand<Command> {
         .help("Path to the dependant project")
         .argument("PATH")
         .map(|s: String| PathBuf::from(s))
-        .fallback(PathBuf::from("."));
+        .fallback(std::env::current_dir().unwrap());
     let dependency = positional("DEPENDENCY").help("Name of the dependency to extract");
 
     construct!(Command::ExtractDep {

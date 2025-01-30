@@ -1,9 +1,11 @@
+mod dependencies;
 mod extractors;
 mod formatting;
 mod languages;
 mod library;
 
-use formatting::format_library_context;
+pub use dependencies::get_dependency;
+pub use formatting::format_library_context;
 use library::Library;
 use std::path::Path;
 
