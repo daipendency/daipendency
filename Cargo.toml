@@ -1,6 +1,6 @@
 [package]
 name = "daipendency"
-version = "1.2.2"
+version = "1.2.3"
 edition = "2021"
 description = "Provides AI coding assistants with public API from dependencies"
 repository = "https://github.com/daipendency/daipendency"
@@ -19,3 +19,7 @@ thiserror = "2.0.11"
 [dev-dependencies]
 assertables = "9.5.0"
 tempfile = "3.15.0"
+
+[profile.release]
+lto = true
+codegen-units = 1
