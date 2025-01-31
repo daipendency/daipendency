@@ -15,25 +15,26 @@ This project was inspired by [Aider's _repository map_](https://aider.chat/docs/
 
 ## CLI Usage
 
-### `daipendency extract-dep`: Extract the documentation of a dependency in a crate
+### `daipendency extract-dep`: Extract the documentation of a dependency
 
-To extract the documentation of a dependency of **the crate in the current directory**, pass the name of the dependency. For example:
+To extract the documentation of a dependency of **the project in the current directory**, pass the name of the dependency. For example:
 
 ```sh
 daipendency extract-dep thiserror
 ```
 
-Alternatively, you can specify the path to the crate that contains the dependency with the `--dependant` option. For example:
+Alternatively, you can specify the path to the project that contains the dependency with the `--dependant` option. For example:
 
 ```sh
 daipendency extract-dep --dependant=/path/to/your/crate thiserror
 ```
 
-**This command will honour the version of the dependency specified in the `Cargo.toml` file.**
+**This command will honour the version of the dependency specified in the manifest file**,
+like `Cargo.toml` in the case of a Rust crate.
 
-### `daipendency extract`: Extract the documentation of a crate
+### `daipendency extract`: Extract the documentation of a library
 
-To extract the documentation from a library, pass the path to the library. For example:
+To extract the documentation from a library, pass the path to it. For example:
 
 ```sh
 daipendency extract /path/to/library
