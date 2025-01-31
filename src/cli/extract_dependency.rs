@@ -1,14 +1,12 @@
 use super::{make_language_option, Command};
 use bpaf::{parsers::ParseCommand, *};
 use std::env::current_dir;
-use std::path::PathBuf;
 
 pub fn make_extract_dep_subcommand() -> ParseCommand<Command> {
     let dependant = long("dependant")
         .help("Path to the dependant project")
         .argument("PATH")
-        .map(|s: String| PathBuf::from(s))
-        .fallback(current_dir().unwrap());
+        .fallback_with(current_dir);
     let dependency = positional("DEPENDENCY").help("Name of the dependency to extract");
     let language = make_language_option();
 
@@ -24,6 +22,8 @@ pub fn make_extract_dep_subcommand() -> ParseCommand<Command> {
 
 #[cfg(test)]
 mod tests {
+    use std::path::PathBuf;
+
     use assertables::assert_matches;
 
     use super::*;
