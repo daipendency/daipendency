@@ -1,6 +1,6 @@
 [package]
 name = "daipendency"
-version = "1.2.3"
+version = "1.2.4"
 edition = "2021"
 description = "Provides AI coding assistants with public API from dependencies"
 repository = "https://github.com/daipendency/daipendency"

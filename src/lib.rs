@@ -7,3 +7,6 @@ pub use library::Library;
 pub use markdown_formatting::generate_markdown_documentation;
 
 pub use languages::Language;
+
+// daipendency-extractor reeexports
+pub use daipendency_extractor::{Namespace, Symbol};
