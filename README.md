@@ -1,10 +1,9 @@
 # Daipendency
 
 _Daipendency_ extracts public API documentation from a library and outputs it in an LLM-friendly format.
-**The endgame is to provide AI coding agents with all the context they need to use a particular dependency**,
-but for now you can just use it manually on the CLI.
-
-This project was inspired by [Aider's _repository map_](https://aider.chat/docs/repomap.html).
+**This project allows you to use the functionality programmatically or via the CLI**,
+so if you just want to integrate it into your favourite AI coding agent,
+check out [daipendency-mcp](https://github.com/daipendency/daipendency-mcp).
 
 ## Features
 
