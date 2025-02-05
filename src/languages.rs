@@ -5,6 +5,7 @@ use std::sync::OnceLock;
 
 type ExtractorInitialiser = fn() -> Box<dyn Extractor + Send + Sync>;
 
+/// The languages supported by daipendency
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Language {
     Rust,

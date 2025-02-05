@@ -1,7 +1,7 @@
 # Daipendency
 
-_Daipendency_ extracts public API documentation from a library and outputs it in an LLM-friendly format.
-**This project allows you to use the functionality programmatically or via the CLI**,
+_Daipendency_ extracts narrative and API documentation from a library and outputs it in an LLM-friendly format.
+**This specific project allows you to use the functionality programmatically or via the CLI**,
 so if you just want to integrate it into your favourite AI coding agent,
 check out [daipendency-mcp](https://github.com/daipendency/daipendency-mcp).
 
