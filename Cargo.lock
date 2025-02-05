@@ -84,7 +84,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "daipendency"
-version = "1.2.4"
+version = "1.2.5"
 dependencies = [
  "anyhow",
  "assertables",
@@ -109,9 +109,9 @@ dependencies = [
 
 [[package]]
 name = "daipendency-extractor-rust"
-version = "0.4.3"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0a9cf65dd508565fe361c310e9abfe74043631893b81c1853b6cf8d0e0fcbd9c"
+checksum = "a523f404fc1b1e81943b0b0df1247aa00f521abc24b9b848ebc07ddf29cb567c"
 dependencies = [
  "cargo_metadata",
  "cc",
