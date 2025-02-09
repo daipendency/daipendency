@@ -83,24 +83,23 @@ mod tests {
         use assertables::{assert_matches, assert_ok};
         use daipendency_extractor::Extractor;
         use daipendency_extractor_rust::RustExtractor;
-        use std::fs;
-        use tempfile::TempDir;
+        use daipendency_testing::tempdir::TempDir;
 
         #[test]
         fn no_matching_extractor() {
-            let temp_dir = TempDir::new().unwrap();
+            let temp_dir = TempDir::new();
 
-            let result = discover_extractor(temp_dir.path());
+            let result = discover_extractor(&temp_dir.path);
 
             assert_matches!(result, Err(ExtractorDiscoveryError::NotFound));
         }
 
         #[test]
         fn malformed_manifest() {
-            let temp_dir = TempDir::new().unwrap();
-            fs::write(temp_dir.path().join("Cargo.toml"), "invalid toml").unwrap();
+            let temp_dir = TempDir::new();
+            temp_dir.create_file("Cargo.toml", "invalid toml").unwrap();
 
-            let result = discover_extractor(temp_dir.path());
+            let result = discover_extractor(&temp_dir.path);
 
             assert_matches!(
                 result,
@@ -113,22 +112,23 @@ mod tests {
 
         #[test]
         fn successful_discovery() {
-            let temp_dir = TempDir::new().unwrap();
-            fs::write(
-                temp_dir.path().join("Cargo.toml"),
-                r#"[package]
-name = "test-package"
-version = "0.1.0"
+            let temp_dir = TempDir::new();
+            temp_dir
+                .create_file(
+                    "Cargo.toml",
+                    r#"[package]
+name = "test_crate"
+version = "1.0.0"
 "#,
-            )
-            .unwrap();
+                )
+                .unwrap();
 
-            let result = discover_extractor(temp_dir.path());
+            let result = discover_extractor(&temp_dir.path);
 
             assert_ok!(&result);
             let discovery = result.unwrap();
             assert_eq!(discovery.language, Language::Rust);
-            assert_eq!(discovery.library_metadata.name, "test-package");
+            assert_eq!(discovery.library_metadata.name, "test_crate");
             assert_eq!(
                 format!("{:?}", discovery.extractor.get_parser_language()),
                 format!("{:?}", RustExtractor::new().get_parser_language())

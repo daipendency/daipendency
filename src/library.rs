@@ -82,18 +82,14 @@ mod tests {
 
     mod load {
         use super::*;
-        use std::fs;
-        use tempfile::TempDir;
+        use daipendency_testing::tempdir::TempDir;
 
         const STUB_NAME: &str = "test_crate";
         const STUB_VERSION: &str = "1.0.0";
         const STUB_DOCUMENTATION: &str = "Test documentation";
 
-        fn create_temp_library(version: Option<String>) -> std::path::PathBuf {
-            let dir = TempDir::new().unwrap();
-            let src_dir = dir.path().join("src");
-            fs::create_dir_all(&src_dir).unwrap();
-
+        fn create_temp_library(version: Option<String>) -> (std::path::PathBuf, TempDir) {
+            let temp_dir = TempDir::new();
             let cargo_toml = format!(
                 r#"[package]
     name = "{}"
@@ -102,21 +98,25 @@ mod tests {
                 STUB_NAME,
                 version.map_or(String::new(), |v| format!("version = \"{}\"", v))
             );
-            fs::write(dir.path().join("Cargo.toml"), cargo_toml).unwrap();
-            fs::write(dir.path().join("README.md"), STUB_DOCUMENTATION).unwrap();
-
-            let lib_rs = r#"pub enum TestEnum {
+            temp_dir.create_file("Cargo.toml", &cargo_toml).unwrap();
+            temp_dir
+                .create_file("README.md", STUB_DOCUMENTATION)
+                .unwrap();
+            temp_dir
+                .create_file(
+                    "src/lib.rs",
+                    r#"pub enum TestEnum {
         A,
     }
-    "#;
-            fs::write(src_dir.join("lib.rs"), lib_rs).unwrap();
-
-            dir.into_path()
+    "#,
+                )
+                .unwrap();
+            (temp_dir.path.to_path_buf(), temp_dir)
         }
 
         #[test]
         fn name() {
-            let library_path = create_temp_library(Some(STUB_VERSION.to_string()));
+            let (library_path, _temp_dir) = create_temp_library(Some(STUB_VERSION.to_string()));
 
             let library = Library::load(&library_path, Some(Language::Rust)).unwrap();
 
@@ -125,7 +125,7 @@ mod tests {
 
         #[test]
         fn version_present() {
-            let library_path = create_temp_library(Some(STUB_VERSION.to_string()));
+            let (library_path, _temp_dir) = create_temp_library(Some(STUB_VERSION.to_string()));
 
             let library = Library::load(&library_path, Some(Language::Rust)).unwrap();
 
@@ -134,7 +134,7 @@ mod tests {
 
         #[test]
         fn version_absent() {
-            let library_path = create_temp_library(None);
+            let (library_path, _temp_dir) = create_temp_library(None);
 
             let library = Library::load(&library_path, Some(Language::Rust)).unwrap();
 
@@ -143,7 +143,7 @@ mod tests {
 
         #[test]
         fn documentation() {
-            let library_path = create_temp_library(Some(STUB_VERSION.to_string()));
+            let (library_path, _temp_dir) = create_temp_library(Some(STUB_VERSION.to_string()));
 
             let library = Library::load(&library_path, Some(Language::Rust)).unwrap();
 
@@ -152,7 +152,7 @@ mod tests {
 
         #[test]
         fn namespaces() {
-            let library_path = create_temp_library(Some(STUB_VERSION.to_string()));
+            let (library_path, _temp_dir) = create_temp_library(Some(STUB_VERSION.to_string()));
 
             let library = Library::load(&library_path, Some(Language::Rust)).unwrap();
 
@@ -165,7 +165,7 @@ mod tests {
 
         #[test]
         fn language_present() {
-            let library_path = create_temp_library(Some(STUB_VERSION.to_string()));
+            let (library_path, _temp_dir) = create_temp_library(Some(STUB_VERSION.to_string()));
 
             let library = Library::load(&library_path, Some(Language::Rust)).unwrap();
 
@@ -174,7 +174,7 @@ mod tests {
 
         #[test]
         fn language_absent_but_discovered() {
-            let library_path = create_temp_library(Some(STUB_VERSION.to_string()));
+            let (library_path, _temp_dir) = create_temp_library(Some(STUB_VERSION.to_string()));
 
             let library = Library::load(&library_path, None).unwrap();
 
@@ -183,9 +183,9 @@ mod tests {
 
         #[test]
         fn language_absent_and_not_discovered() {
-            let dir = TempDir::new().unwrap();
+            let temp_dir = TempDir::new();
 
-            let result = Library::load(dir.path(), None);
+            let result = Library::load(&temp_dir.path, None);
 
             assert!(result.is_err());
         }
